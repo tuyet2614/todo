@@ -1,9 +1,12 @@
 const AddTodo = (props) => {
-    let {handleOnclick, handleOnChange, newContent} = props
-    return(
+    let { handleOnclick, handleOnChange } = props
+    return (
         <div className="addForm">
-            <input type="text" placeholder="Enter your content" onChange={(e) => handleOnChange(e)}></input>
-            <button onClick={() => handleOnclick(newContent)}>Save</button>
+            <form onSubmit={() => handleOnclick()}>
+                <input type="text" placeholder="Enter your content" onChange={(e) => handleOnChange(e)}></input>
+                <button className="addTodo">Save</button>
+            </form>
+
         </div>
     )
 }
