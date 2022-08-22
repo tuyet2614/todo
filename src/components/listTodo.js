@@ -5,6 +5,8 @@ import axios from "axios";
 import Items from "./item";
 import ReactPaginate from 'react-paginate';
 
+const itemsPerPage = 10;
+
 const ListTodo = (props) => {
 
 
@@ -40,14 +42,14 @@ const ListTodo = (props) => {
             .then(res => {
 
                 console.log(check)
-                ShowData()
+                showData()
             })
             .catch(error => console.log(error));
 
         setIsShow(false)
     }
 
-    const ShowData = async () => {
+    const showData = async () => {
         check ? setCheck(false) : setCheck(true)
         axios.get(`https://api-nodejs-todolist.herokuapp.com/task`, {
             headers: {
@@ -76,7 +78,7 @@ const ListTodo = (props) => {
         })
             .then(res => {
 
-                ShowData()
+                showData()
             })
             .catch(error => console.log(error));
     }
@@ -93,7 +95,7 @@ const ListTodo = (props) => {
             })
                 .then(res => {
 
-                    ShowData()
+                    showData()
                 })
                 .catch(error => console.log(error));
 
@@ -112,7 +114,7 @@ const ListTodo = (props) => {
         })
             .then(res => {
 
-                ShowData()
+                showData()
             })
             .catch(error => console.log(error));
 
@@ -152,12 +154,12 @@ const ListTodo = (props) => {
 
 
     useEffect(() => {
-        ShowData()
+        showData()
     }, [])
 
 
 
-    const PaginatedItems = (itemsPerPage) => {
+    const PaginatedItems = () => {
         // We start with an empty list of items.
 
         const [currentItems, setCurrentItems] = useState(null);
@@ -174,7 +176,7 @@ const ListTodo = (props) => {
             setCurrentItems(todoList.slice(itemOffset, endOffset));
             setPageCount(Math.ceil(todoList.length / itemsPerPage));
 
-        }, [itemOffset, itemsPerPage, check]);
+        }, [itemOffset]);
 
         // Invoke when user click to request another page.
         const handlePageClick = (event) => {
@@ -226,7 +228,7 @@ const ListTodo = (props) => {
                     <button onClick={() => handleOnShow()} className="addTodo">create</button>}
             </div>
             <div className="list_todo">
-                {PaginatedItems(4)}
+                <PaginatedItems />
             </div>
 
 
