@@ -1,5 +1,11 @@
 const Items = (props) => {
-    let { currentItems, handleEditTodo, keyDownHandler, DoneTodo, failTodo, handleDelete, DataSave, newContent, todoList } = props
+
+    let { currentItems, handleEditTodo, keyDownHandler, DoneTodo, handleDelete, DataSave, newContent, loading } = props
+    let color = 'black'
+    let done = ''
+    if (loading) {
+        return <h2>Loading....</h2>
+    }
     return (
         <>
             <div>
@@ -9,12 +15,14 @@ const Items = (props) => {
                         <th>Content</th>
                         <th>Date</th>
                         <th>Action</th>
-                        <th></th>
+                        <th>Complete</th>
                     </tr>
 
-                    {currentItems && currentItems.map((item) => (
-                        <tr key={item._id} style={{ color: item.color }}>
-                            <td>{parseInt(item._id)}</td>
+                    {currentItems && currentItems.map((item, index) => (
+                        item.completed ? [done = 'completed', color = '#DEB887'] : [done = '', color = "black"],
+                        <tr key={item._id} style={{ color: color }}>
+
+                            <td>{index}</td>
                             <td onClick={(e) => handleEditTodo(item, e)} className="description" onBlur={(e) => DataSave(e, item)}>
                                 {item.description
                                     ? item.description : <input type="text" defaultValue={newContent.description} onKeyDown={(e) => keyDownHandler(e, item)} ></input>}
@@ -23,9 +31,9 @@ const Items = (props) => {
                             <td>{new Date(item.createdAt).toLocaleDateString()}</td>
                             <td>
                                 <button onClick={() => DoneTodo(item)}>v</button>
-                                <button onClick={() => failTodo(item)}>x</button>
+                                <button onClick={() => handleDelete(item)}>x</button>
                             </td>
-                            <td><button onClick={() => handleDelete(item)}>Delete</button></td>
+                            <td>{done}</td>
                         </tr>
 
 

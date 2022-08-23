@@ -23,39 +23,47 @@ th {
   width: 500px;
 }
 
-.pagination {
-  margin-top: 80px auto;
 
+.pagination {
   display: flex;
-  justify-content: space-between;
-  list-style: none;
+  height: 54px;
+  padding-top: 15px;
+  justify-content: flex-end;
+}
+
+.pagination li {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  color: #00a2ea;
+  margin-right: 4px;
+  cursor: pointer;
+
+}
+
+.pagination li:hover {
+  background-color: #00a2ea;
+  color: #ddd;
+
+}
+
+.logOut {
+  float: left;
+
+}
+
+button:hover {
   cursor: pointer;
 }
 
-.pagination a {
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #6c7ac9;
-  color: #6c7ac9;
-}
-
-.pagination__link {
-  font-weight: bold;
-}
-
-.pagination__link--active a {
-  color: #fff;
-  background: #6c7ac9;
-}
-
-.pagination__link--disabled a {
-  color: rgb(198, 197, 202);
-  border: 1px solid rgb(198, 197, 202);
-}
-
-.addTodo {
-  width: 100px;
-  height: 50px;
-  margin-bottom: 50px;
-  margin-left: 30px;
+.header {
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  background-color: #F8F8FF;
+  margin-bottom: 20px;
 }

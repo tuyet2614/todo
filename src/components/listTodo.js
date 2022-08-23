@@ -3,54 +3,36 @@ import './listTodo.css'
 import AddTodo from "./addTodo";
 import axios from "axios";
 import Items from "./item";
-import ReactPaginate from 'react-paginate';
+import Pagination from "./Pagination";
+import 'antd/dist/antd.css';
+import { notification } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
-const itemsPerPage = 10;
 
-const ListTodo = (props) => {
+const ListTodo = () => {
 
-
+    let navigate = useNavigate();
     const [isShow, setIsShow] = useState(false)
     const handleOnShow = () => setIsShow(true)
     const token = localStorage.getItem('token')
     const [todoList, setTodoList] = useState([])
     const [newContent, setNewContent] = useState()
-    const [check, setCheck] = useState(false)
+
+    const [loading, setLoading] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [postPerPage] = useState(10)
+
+    const openNotificationWithIcon = (type) => {
+        notification[type]({
+            message: 'Notification Title',
+            description:
+                "add successfully",
+        });
+    };
+
+    const showData = () => {
 
 
-    const handleOnChange = (e) => {
-
-        setNewContent(e.target.value)
-        console.log(e.target.value)
-
-
-    }
-
-
-    const handleOnclick = () => {
-        console.log(check)
-
-
-        axios.post(`https://api-nodejs-todolist.herokuapp.com/task`, {
-            "description": newContent
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(res => {
-
-                console.log(check)
-                showData()
-            })
-            .catch(error => console.log(error));
-
-        setIsShow(false)
-    }
-
-    const showData = async () => {
-        check ? setCheck(false) : setCheck(true)
         axios.get(`https://api-nodejs-todolist.herokuapp.com/task`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -61,15 +43,55 @@ const ListTodo = (props) => {
                 setTodoList(res.data.data)
                 console.log(res);
                 console.log(res.data);
+                console.log("Todolist: " + todoList)
 
             })
             .catch(error => console.log(error));
 
     }
 
+    const indexOfLastPost = currentPage * postPerPage
+    const indexOfFistPost = indexOfLastPost - postPerPage
+    const currentItems = todoList.slice(indexOfFistPost, indexOfLastPost)
+
+    useEffect(() => {
+        setLoading(true)
+        showData()
+        setLoading(false)
+    }, [])
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber)
+    const handleOnclick = () => {
+        axios.post(`https://api-nodejs-todolist.herokuapp.com/task`, {
+            "description": newContent
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => {
+                setTodoList((pre) => [...pre, res.data.data,])
+                openNotificationWithIcon('success')
+            })
+            .catch(error => console.log(error));
+
+        setIsShow(false)
+    }
+
+    const handleOnChange = (e) => {
+
+        setNewContent(e.target.value)
+        console.log(e.target.value)
+
+
+    }
+
+
+
     const handleDelete = (todo) => {
         console.log(todo._id)
-        check ? setCheck(false) : setCheck(true)
+
         axios.delete(`https://api-nodejs-todolist.herokuapp.com/task/${todo._id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -77,13 +99,13 @@ const ListTodo = (props) => {
             }
         })
             .then(res => {
-
-                showData()
+                const newTodoList = todoList.filter(item => item._id !== todo._id)
+                setTodoList(newTodoList)
             })
             .catch(error => console.log(error));
     }
     const keyDownHandler = (event, todo) => {
-        check ? setCheck(false) : setCheck(true)
+
         if (event.key === 'Enter') {
             axios.put(`https://api-nodejs-todolist.herokuapp.com/task/${todo._id}`, {
                 "description": event.target.value
@@ -94,8 +116,7 @@ const ListTodo = (props) => {
                 }
             })
                 .then(res => {
-
-                    showData()
+                    setTodoList(todoList.map(item => item._id === todo._id ? { ...res.data.data, description: event.target.value } : item))
                 })
                 .catch(error => console.log(error));
 
@@ -103,7 +124,7 @@ const ListTodo = (props) => {
     }
 
     const DataSave = (event, todo) => {
-        check ? setCheck(false) : setCheck(true)
+
         axios.put(`https://api-nodejs-todolist.herokuapp.com/task/${todo._id}`, {
             "description": event.target.value
         }, {
@@ -113,8 +134,7 @@ const ListTodo = (props) => {
             }
         })
             .then(res => {
-
-                showData()
+                setTodoList(todoList.map(item => item._id === todo._id ? { ...res.data.data, description: event.target.value } : item))
             })
             .catch(error => console.log(error));
 
@@ -130,105 +150,82 @@ const ListTodo = (props) => {
             todoList.map(item => item._id === todo._id ? { ...TodoItem, description: '' } : item)
 
         )
-        check ? setCheck(false) : setCheck(true)
-
-
     }
 
     const DoneTodo = (todo) => {
-        let todoChange = todoList.find((item) => item._id === todo._id)
-        setTodoList(
-            todoList.map((item) => item._id === todo._id ? { ...todoChange, color: "blue" } : item))
-        check ? setCheck(false) : setCheck(true)
 
+        axios.put(`https://api-nodejs-todolist.herokuapp.com/task/${todo._id}`, {
+            "completed": true
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => {
+                setTodoList(todoList.map(item => item._id === todo._id ? { ...res.data.data, completed: true } : item))
+
+            })
+            .catch(error => console.log(error));
 
     }
 
-    const failTodo = (todo) => {
-        let todoChange = todoList.find((item) => item._id === todo._id)
-        setTodoList(
-            todoList.map((item) => item._id === todo._id ? { ...todoChange, color: "red" } : item))
-        check ? setCheck(false) : setCheck(true)
+    const logOutUser = () => {
+        console.log(token)
+        localStorage.setItem('token', null)
+        navigate('/', { replace: true })
+        // axios.post(`https://api-nodejs-todolist.herokuapp.com/user/logout`, {
+        //     headers: {
+        //         'Authorization': `Bearer ${token}`,
 
-    }
+        //     }
+        // })
+        //     .then(res => {
+        //         console.log(res);
+        //         console.log(res.data);
+        //         navigate('/', { replace: true })
 
-
-    useEffect(() => {
-        showData()
-    }, [])
-
-
-
-    const PaginatedItems = () => {
-        // We start with an empty list of items.
-
-        const [currentItems, setCurrentItems] = useState(null);
-        const [pageCount, setPageCount] = useState(0);
-
-        // Here we use item offsets; we could also use page offsets
-        // following the API or data you're working with.
-        const [itemOffset, setItemOffset] = useState(0);
-
-        useEffect(() => {
-            // Fetch items from another resources.
-            const endOffset = itemOffset + itemsPerPage;
-            console.log(`Loading items from ${itemOffset} to ${endOffset}`);
-            setCurrentItems(todoList.slice(itemOffset, endOffset));
-            setPageCount(Math.ceil(todoList.length / itemsPerPage));
-
-        }, [itemOffset]);
-
-        // Invoke when user click to request another page.
-        const handlePageClick = (event) => {
-            const newOffset = (event.selected * itemsPerPage) % todoList.length;
-            console.log(
-                `User requested page number ${event.selected}, which is offset ${newOffset}`
-            );
-            setItemOffset(newOffset);
-        };
-
-        return (
-            <>
-                <Items currentItems={currentItems}
-                    handleEditTodo={handleEditTodo}
-                    keyDownHandler={keyDownHandler}
-                    DoneTodo={DoneTodo}
-                    failTodo={failTodo}
-                    handleDelete={handleDelete}
-                    DataSave={DataSave}
-                    newContent={newContent}
-                    todoList={todoList}
-                />
-
-                <ReactPaginate
-                    previousLabel={"← Previous"}
-                    nextLabel={"Next →"}
-                    pageCount={pageCount}
-                    onPageChange={handlePageClick}
-                    containerClassName={"pagination"}
-                    previousLinkClassName={"pagination__link"}
-                    nextLinkClassName={"pagination__link"}
-                    disabledClassName={"pagination__link--disabled"}
-                    activeClassName={"pagination__link--active"}
-                />
-            </>
-        );
+        //     })
+        //     .catch(error => console.log(error));
     }
 
     return (
         <div className="mainList">
-            <div className="add_button">
+            <div className="header">
+                <div className="logOut">
+                    <button onClick={logOutUser}>Log Out</button>
+                </div>
+                <div className="add_button">
 
+                    {isShow ? <AddTodo
+                        handleOnclick={handleOnclick}
+                        handleOnChange={handleOnChange}
 
-                {isShow ? <AddTodo
-                    handleOnclick={handleOnclick}
-                    handleOnChange={handleOnChange}
+                    /> :
+                        <button onClick={() => handleOnShow()} className="addTodo">create</button>}
+                </div>
 
-                /> :
-                    <button onClick={() => handleOnShow()} className="addTodo">create</button>}
+                <div className="user">
+                    <button>User</button>
+                </div>
+
             </div>
+
             <div className="list_todo">
-                <PaginatedItems />
+
+
+                <Items
+                    currentItems={currentItems}
+                    handleEditTodo={handleEditTodo}
+                    keyDownHandler={keyDownHandler}
+                    DoneTodo={DoneTodo}
+                    handleDelete={handleDelete}
+                    DataSave={DataSave}
+                    newContent={newContent}
+
+                    loading={loading}
+                />
+                <Pagination postPerPage={postPerPage} totalPosts={todoList.length} paginate={paginate} />
             </div>
 
 

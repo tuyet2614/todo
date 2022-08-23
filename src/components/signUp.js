@@ -16,38 +16,43 @@ const SignUp = () => {
 
   }
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    axios.post(`https://api-nodejs-todolist.herokuapp.com/user/register`, {
+    axios.post('https://api-nodejs-todolist.herokuapp.com/user/register', {
       name: name,
       email: email,
-      password: password, 
-      confPassword: confPassword
-    })
+      password: password,
+      age: 20
+    },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
       .then(res => {
-        navigate('/login', {replace: true})
+        navigate('/login', { replace: true })
         console.log(res);
         console.log(res.data);
-        
+
       })
       .catch(error => console.log(error));
-      
-      
+
+
   }
-  
+
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
   }
-  
+
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
   }
-  
+
   const handleConfPasswordChange = (e) => {
     setConfPassword(e.target.value);
   }
- 
-  
+
+
   return (
     <div className="App">
       <header className="App-header">
@@ -56,7 +61,7 @@ const SignUp = () => {
           <label >
             Name:
           </label><br />
-          <input type="text" value={name} required onChange={(e)=> { handleChange(e) }} /><br />
+          <input type="text" value={name} required onChange={(e) => { handleChange(e) }} /><br />
           <label>
             Email:
           </label><br />
@@ -70,7 +75,7 @@ const SignUp = () => {
           </label><br />
           <input type="password" value={confPassword} required onChange={(e) => { handleConfPasswordChange(e) }} /><br />
           <br />
-          <input type="submit" value="Submit"/>
+          <input type="submit" value="Submit" />
         </form>
       </header>
     </div>

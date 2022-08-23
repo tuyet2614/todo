@@ -11,49 +11,70 @@ import {
   useParams,
   Routes,
   Link,
-  useNavigate
+  useNavigate,
+  BrowserRouter,
+  Navigate,
+  Outlet
 } from "react-router-dom";
 import SignUp from './components/signUp';
 
-function Splash() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    console.log('token', token)
-    if (!token) {
+// function Splash() {
+//   const navigate = useNavigate();
+//   useEffect(() => {
+//     const token = localStorage.getItem('token');
+//     console.log('token: ', token)
 
-      navigate('/login', { replace: true });
-    } else {
-      navigate('/todo', { replace: true });
-    }
-  }, []);
+//     if (!token) {
+//       navigate('/login', { replace: true });
 
-  return null;
+
+//     } else {
+//       navigate('/todo', { replace: true });
+//     }
+//   }, []);
+
+// };
+
+const ProtectedRoute = ({
+  token,
+  redirectPath = '/login',
+
+}) => {
+  if (!token) {
+    console.log(token)
+    return <Navigate to='/login' replace />;
+  }
+
+  return <Outlet />;
 };
 
 function App() {
 
+  const token = localStorage.getItem('token');
+
   return (
     <div className="App">
       <header className="App-header">
-        <Router>
-          <Routes>
-            <Route path="/" element={<Splash />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/login" element={<Login />} />
 
-            <Route path="/todo"
-              element={<ListTodo
+        <Routes>
+          <Route element={<ProtectedRoute token={!!token} />}>
+            <Route path="/" element={<ListTodo />} />
+            <Route path="/todo" element={<ListTodo />} />
+          </Route>
+
+          <Route exact path="/signup" element={<SignUp />} />
+          <Route exact path="/login" element={<Login />} />
+          {/* <Route exact path="/todo"
+            element={<ListTodo />} /> */}
 
 
-              />} />
-            <Route path="/user" element={<Splash />}>
+          {/* <Route path="/user" element={<Splash />}>
               <Route path=":id" element={<Splash />} />
-            </Route>
-          </Routes>
+            </Route> */}
+        </Routes>
 
 
-        </Router>
+
 
 
       </header>

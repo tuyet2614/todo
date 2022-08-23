@@ -7,12 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const Login = () => {
   const [username, setUserName] = useState();
   const [password, setPassword] = useState();
-  const [cookies, setCookie] = useCookies(['user']);
 
-  const handle = () => {
-    setCookie('Name', username, { path: '/' })
-    setCookie('Password', password, { path: '/' })
-  }
   let navigate = useNavigate();
   const handleLoginSubmit = (e) => {
     e.preventDefault();
@@ -29,6 +24,7 @@ const Login = () => {
         console.log(res.data);
         localStorage.setItem("token", res.data.token);
         navigate('/', { replace: true })
+
       })
       .catch(error => console.log(error));
 
