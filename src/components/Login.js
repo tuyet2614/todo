@@ -2,11 +2,13 @@ import './Login.css'
 import axios from 'axios'
 import { useState } from 'react';
 import { useCookies } from 'react-cookie';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 const Login = () => {
   const [username, setUserName] = useState();
   const [password, setPassword] = useState();
   const [cookies, setCookie] = useCookies(['user']);
+  let navigate = useNavigate();
   const handle = () => {
     setCookie('Name', username, { path: '/' })
     setCookie('Password', password, { path: '/' })
@@ -22,10 +24,11 @@ const Login = () => {
       }
     })
       .then(res => {
-
+        navigate('/', {replace: true})
         console.log(res);
         console.log(res.data);
-
+        console.log(res.data.token);
+        sessionStorage.setItem("token", res.data.token);
       })
       .catch(error => console.log(error));
 
