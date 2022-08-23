@@ -2,152 +2,234 @@ import { useEffect, useState } from "react";
 import './listTodo.css'
 import AddTodo from "./addTodo";
 import axios from "axios";
+import Items from "./item";
+import Pagination from "./Pagination";
+import 'antd/dist/antd.css';
+import { notification } from 'antd';
+import { useNavigate, Link } from 'react-router-dom';
 
-const ListTodo = (props) => {
-    
-    const [listItem, setListItem] = useState([])
-    const DoneTodo = (todo) => {
-        let todoChange = listItem.find((item) => item._id === todo._id)
-        setListItem(
-        listItem.map((item) => item._id === todo._id ? {...todoChange, color: "blue"} : item))
-        
-    }
 
-    const failTodo = (todo) => {
-        let todoChange = listItem.find((item) => item._id === todo._id)
-        setListItem(
-        listItem.map((item) => item._id === todo._id ? {...todoChange, color: "red"} : item))
-    }
+const ListTodo = () => {
 
-    const handleDelete = (todo) => {
-    
-        let newTodo = listItem.filter(item => item._id !== todo._id)
-        setListItem(newTodo)
-        console.log(todo)
-    }
+    let navigate = useNavigate();
+    const [isShow, setIsShow] = useState(false)
+    const handleOnShow = () => setIsShow(true)
+    const token = localStorage.getItem('token')
+    const [todoList, setTodoList] = useState([])
+    const [newContent, setNewContent] = useState()
 
-    const keyDownHandler = (event, todo) => {
-    if (event.key === 'Enter') {
-      const TodoItem = listItem.find(item => item._id === todo._id)
-    setListItem(
-      listItem.map(item => item._id === todo._id ? {...TodoItem, description: event.target.value} : item)
-    )
-    }
-  }
-  const [isShow, setIsShow] = useState(false)
-  const handleOnShow = () => setIsShow(true)
-  const [content, setNewContent] = useState('')
-  const token = sessionStorage.getItem('token')
-  
-  const [todoList, setTodoList] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [postPerPage] = useState(10)
 
-  const handleOnChange = (e) => {
-    setNewContent(e.target.value)
-    console.log(content)
-  }
+    const openNotificationWithIcon = (type) => {
+        notification[type]({
+            message: 'Notification Title',
+            description:
+                "add successfully",
+        });
+    };
 
-  const handleOnclick = (e) => {
-    e.preventDefault();
-    console.log(token)
-    
-    axios.post(`https://api-nodejs-todolist.herokuapp.com/task`, {
-      
-      "description": content,
-      
-    }, {
-    
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        
-      },
-    })
-    .then(res => {
-      console.log(res);
-      console.log(res.data);
-      handleShow()
-    })
-    .catch(error => console.log(error));
+    const showData = () => {
 
-    // setTodoList([...todoList,{...newTodo}])
-    setIsShow(false)
-  }
-  
-  const handleEditTodo = (todo,e) => {
-    const TodoItem = listItem.find(item => item._id === todo._id)
-    setListItem(
-      listItem.map(item => item._id === todo._id ? {...TodoItem, description: e.target.value} : item)
-    )
-  }
 
-    const handleShow = async() => {
-    
-        await axios.get(`https://api-nodejs-todolist.herokuapp.com/task`, {
-
+        axios.get(`https://api-nodejs-todolist.herokuapp.com/task`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         })
-        .then(res => {
-            
-            console.log(res);
-            console.log(res.data);
-            console.log("data: " + (res.data.data))
-            setListItem(res.data.data)
-            console.log("hello : " + listItem)
-        })
-        .catch(error => console.log(error));
+            .then(res => {
+                setTodoList(res.data.data)
+                console.log(res);
+                console.log(res.data);
+                console.log("Todolist: " + todoList)
+
+            })
+            .catch(error => console.log(error));
+
     }
+
+    const indexOfLastPost = currentPage * postPerPage
+    const indexOfFistPost = indexOfLastPost - postPerPage
+    const currentItems = todoList.slice(indexOfFistPost, indexOfLastPost)
+
     useEffect(() => {
-        handleShow()
-    },[])
-    
-    return(
+        setLoading(true)
+        showData()
+        setLoading(false)
+    }, [])
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber)
+    const handleOnclick = () => {
+        axios.post(`https://api-nodejs-todolist.herokuapp.com/task`, {
+            "description": newContent
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => {
+                setTodoList((pre) => [...pre, res.data.data,])
+                openNotificationWithIcon('success')
+            })
+            .catch(error => console.log(error));
+
+        setIsShow(false)
+    }
+
+    const handleOnChange = (e) => {
+
+        setNewContent(e.target.value)
+        console.log(e.target.value)
+
+
+    }
+
+
+
+    const handleDelete = (todo) => {
+        console.log(todo._id)
+
+        axios.delete(`https://api-nodejs-todolist.herokuapp.com/task/${todo._id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => {
+                const newTodoList = todoList.filter(item => item._id !== todo._id)
+                setTodoList(newTodoList)
+            })
+            .catch(error => console.log(error));
+    }
+    const keyDownHandler = (event, todo) => {
+
+        if (event.key === 'Enter') {
+            axios.put(`https://api-nodejs-todolist.herokuapp.com/task/${todo._id}`, {
+                "description": event.target.value
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(res => {
+                    setTodoList(todoList.map(item => item._id === todo._id ? { ...res.data.data, description: event.target.value } : item))
+                })
+                .catch(error => console.log(error));
+
+        }
+    }
+
+    const DataSave = (event, todo) => {
+
+        axios.put(`https://api-nodejs-todolist.herokuapp.com/task/${todo._id}`, {
+            "description": event.target.value
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => {
+                setTodoList(todoList.map(item => item._id === todo._id ? { ...res.data.data, description: event.target.value } : item))
+            })
+            .catch(error => console.log(error));
+
+
+    }
+
+    const handleEditTodo = (todo, e) => {
+
+        setNewContent(todo)
+        const TodoItem = todoList.find(item => item._id === todo._id)
+
+        setTodoList(
+            todoList.map(item => item._id === todo._id ? { ...TodoItem, description: '' } : item)
+
+        )
+    }
+
+    const DoneTodo = (todo) => {
+
+        axios.put(`https://api-nodejs-todolist.herokuapp.com/task/${todo._id}`, {
+            "completed": true
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => {
+                setTodoList(todoList.map(item => item._id === todo._id ? { ...res.data.data, completed: true } : item))
+
+            })
+            .catch(error => console.log(error));
+
+    }
+
+    const logOutUser = () => {
+        console.log(token)
+        localStorage.setItem('token', null)
+        navigate('/login', { replace: true })
+        // axios.post(`https://api-nodejs-todolist.herokuapp.com/user/logout`, {
+        //     headers: {
+        //         'Authorization': `Bearer ${token}`,
+
+        //     }
+        // })
+        //     .then(res => {
+        //         console.log(res);
+        //         console.log(res.data);
+        //         navigate('/', { replace: true })
+
+        //     })
+        //     .catch(error => console.log(error));
+    }
+
+    return (
         <div className="mainList">
-            <div className="add_button">
-                
-                
-                {isShow?<AddTodo 
-                handleOnclick = {handleOnclick}
-                content = {content}
-                handleOnChange = {handleOnChange}
-                /> :
-                <button onClick={() => handleOnShow()}>create</button>}
-            </div>
-            <div className="list_todo">
-                <div>
-                    
-                    <table>
-                        <tr>
-                            <th>ID</th>
-                            <th>Content</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                            <th></th>
-                        </tr>
-                        
-                        {listItem.map((item) => (
-                            <tr key={item._id} style={{color:item.color}}>
-                                <td>{parseInt(item._id)}</td>
-                                <td onClick={(e) => handleEditTodo(item, e)}>{item.description ? item.description : <input type="text" onKeyDown={(e) => keyDownHandler(e, item)}></input>}</td>
-                                <td>{new Date(item.createdAt).toLocaleDateString()}</td>
-                                <td>
-                                    <button onClick={() => DoneTodo(item)}>v</button>
-                                    <button onClick={() => failTodo(item)}>x</button>
-                                </td>
-                                <td><button onClick={() => handleDelete(item)}>Delete</button></td>
-                            </tr>
-                            
-                            
-                        ))}
-                        
-                        
-                    </table>
-                    
+            <div className="header">
+                <div className="logOut">
+                    <button onClick={() => logOutUser()}>Log Out</button>
                 </div>
+                <div className="add_button">
+
+                    {isShow ? <AddTodo
+                        handleOnclick={handleOnclick}
+                        handleOnChange={handleOnChange}
+
+                    /> :
+                        <button onClick={() => handleOnShow()} className="addTodo">create</button>}
+                </div>
+
+                <div className="user">
+                    <button className="btnUser"><Link to='/user'>User</Link></button>
+                </div>
+
             </div>
-        </div>
+
+            <div className="list_todo">
+
+
+                <Items
+                    currentItems={currentItems}
+                    handleEditTodo={handleEditTodo}
+                    keyDownHandler={keyDownHandler}
+                    DoneTodo={DoneTodo}
+                    handleDelete={handleDelete}
+                    DataSave={DataSave}
+                    newContent={newContent}
+
+                    loading={loading}
+                />
+                <Pagination postPerPage={postPerPage} totalPosts={todoList.length} paginate={paginate} />
+            </div>
+
+
+        </div >
     )
 
 }

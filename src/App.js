@@ -1,46 +1,80 @@
 import logo from './logo.svg';
 import './App.css';
 import ListTodo from './components/listTodo';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Login from './components/Login';
+import axios from 'axios';
+import User from './components/User';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   useParams,
   Routes,
-  Link
+  Link,
+  useNavigate,
+  BrowserRouter,
+  Navigate,
+  Outlet
 } from "react-router-dom";
 import SignUp from './components/signUp';
-import axios from 'axios';
+
+// function Splash() {
+//   const navigate = useNavigate();
+//   useEffect(() => {
+//     const token = localStorage.getItem('token');
+//     console.log('token: ', token)
+
+//     if (!token) {
+//       navigate('/login', { replace: true });
+
+
+//     } else {
+//       navigate('/todo', { replace: true });
+//     }
+//   }, []);
+
+// };
+const PrivateRoute = (token) => {
+    
+    return token ? <Outlet /> : <Navigate to='/login' />
+}
+
+const ProtectedRoute = (token,
+    redirectPath = '/login',
+    ) => {
+    
+    return token ? <Outlet /> : <Navigate to={redirectPath} replace />
+  };
 
 function App() {
   
-  
-  
-  
+  const token = localStorage.getItem('token');
+  // console.log(token)
+
   return (
     <div className="App">
       <header className="App-header">
-        <Router> 
+        <BrowserRouter>
           <Routes>
-            
-            <Route path="/Signup" element={<SignUp />}>
-              {/* <Login /> */}
+            {/* <Route path="/" element={<Login />} /> */}
+            <Route element={<PrivateRoute token={token}/>}>
+              <Route path="/" element={<ListTodo />} />
+              <Route path="/todo" element={<ListTodo />} />
             </Route>
-            <Route path="/login" element={<Login />}>
-              
-            </Route>
-            <Route path="/" 
-            element={<ListTodo 
-            />}>
-            </Route>
+
+            <Route exact path="/signup" element={<SignUp />} />
+            <Route exact path="/login" element={<Login />} />
+            {/* <Route exact path="/todo"
+              element={<ListTodo />} /> */}
+
+
+            <Route path="/user" element={<User token={token}/>}>
+                <Route path=":id" element={<User />} />
+              </Route>
           </Routes>
-          
-          
-        </Router>
-        
-        
+        </BrowserRouter>
+       
       </header>
     </div>
   );

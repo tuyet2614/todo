@@ -2,17 +2,13 @@ import './Login.css'
 import axios from 'axios'
 import { useState } from 'react';
 import { useCookies } from 'react-cookie';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 const Login = () => {
   const [username, setUserName] = useState();
   const [password, setPassword] = useState();
-  const [cookies, setCookie] = useCookies(['user']);
+
   let navigate = useNavigate();
-  const handle = () => {
-    setCookie('Name', username, { path: '/' })
-    setCookie('Password', password, { path: '/' })
-  }
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     axios.post(`https://api-nodejs-todolist.herokuapp.com/user/login`, {
@@ -24,11 +20,11 @@ const Login = () => {
       }
     })
       .then(res => {
-        navigate('/', {replace: true})
         console.log(res);
         console.log(res.data);
-        console.log(res.data.token);
-        sessionStorage.setItem("token", res.data.token);
+        localStorage.setItem("token", res.data.token);
+        navigate('/', { replace: true })
+
       })
       .catch(error => console.log(error));
 
