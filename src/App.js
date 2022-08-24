@@ -1,10 +1,10 @@
-import logo from './logo.svg';
-import './App.css';
-import ListTodo from './components/listTodo';
+import logo from "./logo.svg";
+import "./App.css";
+import ListTodo from "./components/listTodo";
 import { useEffect, useState } from "react";
-import Login from './components/Login';
-import axios from 'axios';
-import User from './components/User';
+import Login from "./components/Login";
+import axios from "axios";
+import User from "./components/User";
 import {
   BrowserRouter as Router,
   Switch,
@@ -15,9 +15,9 @@ import {
   useNavigate,
   BrowserRouter,
   Navigate,
-  Outlet
+  Outlet,
 } from "react-router-dom";
-import SignUp from './components/signUp';
+import SignUp from "./components/signUp";
 
 // function Splash() {
 //   const navigate = useNavigate();
@@ -28,7 +28,6 @@ import SignUp from './components/signUp';
 //     if (!token) {
 //       navigate('/login', { replace: true });
 
-
 //     } else {
 //       navigate('/todo', { replace: true });
 //     }
@@ -36,21 +35,15 @@ import SignUp from './components/signUp';
 
 // };
 const PrivateRoute = (token) => {
-    
-    return token ? <Outlet /> : <Navigate to='/login' />
-}
+  return token ? <Outlet /> : <Navigate to="/login" />;
+};
 
-const ProtectedRoute = (token,
-    redirectPath = '/login',
-    ) => {
-    
-    return token ? <Outlet /> : <Navigate to={redirectPath} replace />
-  };
+const ProtectedRoute = (token, redirectPath = "/login") => {
+  return token ? <Outlet /> : <Navigate to={redirectPath} replace />;
+};
 
 function App() {
-  
-  const token = localStorage.getItem('token');
-  // console.log(token)
+  const token = localStorage.getItem("token");
 
   return (
     <div className="App">
@@ -58,7 +51,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             {/* <Route path="/" element={<Login />} /> */}
-            <Route element={<PrivateRoute token={token}/>}>
+            <Route element={<PrivateRoute token={token} />}>
               <Route path="/" element={<ListTodo />} />
               <Route path="/todo" element={<ListTodo />} />
             </Route>
@@ -68,13 +61,11 @@ function App() {
             {/* <Route exact path="/todo"
               element={<ListTodo />} /> */}
 
-
-            <Route path="/user" element={<User token={token}/>}>
-                <Route path=":id" element={<User />} />
-              </Route>
+            <Route path="/user" element={<User token={token} />}>
+              <Route path=":id" element={<User />} />
+            </Route>
           </Routes>
         </BrowserRouter>
-       
       </header>
     </div>
   );
